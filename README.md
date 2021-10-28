@@ -36,12 +36,12 @@ import browserChatInstance from "...";
 const payments = [
   {
     address: "2QVJOY3BRRGWP7IOYL64O5BU3WLUJ4TZ",
-    amount: Math.trunc(1e9),
+    amount: 1e9, // integer, amount in smallest units
     asset: "base"
   },
   {
     address: "EJC4A7WQGHEZEKW6RLO7F26SAR4LAQBU",
-    amount: Math.trunc(2e9),
+    amount: 2e9,
     asset: "base"
   }
 ];
