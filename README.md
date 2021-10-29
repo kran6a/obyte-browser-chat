@@ -75,10 +75,14 @@ const pairingLink = browserChatInstance.sendMessageAfterPairing("We're glad to s
 ### onPairing - Callback function triggered when pairing devices
 Where "invite" is the link to pairing
 ```js
-const link = browserChatInstance.onPairing((invite) => {
-  console.log("invite", invite)
+const link = browserChatInstance.onPairing((msgObject) => {
+  console.log("msgObject", msgObject)
 });
 ```
+where msgObject contains:
+* reply - message forwarding function 
+* body - object with message and requestId
+* sender - sender's public key
 
 ### onMessage - Callback function triggered when a message is received
 
@@ -89,7 +93,7 @@ browserChatInstance.onMessage((msgObject) => {
 ```
 where msgObject contains:
 * reply - message forwarding function 
-* body - message (string or object with message and requestId)
+* body - message (string)
 * sender - sender's public key
 
 ### onReady - Callback function is triggered when the device connects to the hub

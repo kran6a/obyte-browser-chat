@@ -2,11 +2,6 @@
 # yarn lockfile v1
 
 
-"@ahrakio/witty-webpack-declaration-files@1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@ahrakio/witty-webpack-declaration-files/-/witty-webpack-declaration-files-1.0.3.tgz#08a3bcfe23e5834fe9a85f234d5090c3d8549ef8"
-  integrity sha512-HuAyZCqvBbW4bR/EJfVnmmUSagw7lqzwJQI7gAekFhhGiEUhbIFRdxcwymwSjHr/rsyIhFcLamUbrlbrBsg2pQ==
-
 "@babel/code-frame@^7.14.5", "@babel/code-frame@^7.15.8":
   version "7.15.8"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.15.8.tgz#45990c47adadb00c03677baa89221f7cc23d2503"
@@ -5671,7 +5666,7 @@ wide-align@^1.1.0:
   dependencies:
     string-width "^1.0.2 || 2 || 3 || 4"
 
-wif@2.0.6:
+wif@^2.0.6:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/wif/-/wif-2.0.6.tgz#08d3f52056c66679299726fade0d432ae74b4704"
   integrity sha1-CNP1IFbGZnkplyb63g1DKudLRwQ=
