@@ -17,9 +17,10 @@ export default class {
    * @param {object} client - obyte.js instance
    * @param {string} [name=Chat] - Chat name
    * @param {boolean} [testnet=false] - true for test network
+   * @param {string} [localStorageKey=chat]
    */
-  constructor(client, name = "Chat", testnet = false) {
-    this.#LOCALSTORAGE_KEY = `chat-${testnet ? "testnet" : "livenet"}`;
+  constructor(client, name = "Chat", testnet = false, localStorageKey = "chat") {
+    this.#LOCALSTORAGE_KEY = `${localStorageKey}-${testnet ? "testnet" : "livenet"}`;
     this.#messages = [];
     this.#invite = null;
     this.client = client;
