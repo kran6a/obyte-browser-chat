@@ -1,29 +1,31 @@
-# obyte browser chat
+# Obyte browser chat
 
 *This library uses local storage*
 ## Install
 ``yarn add obyte-browser-chat obyte``
 
 ## Use
-``import browserChat from "obyte-browser-chat"``
+```js
+import browserChat from "obyte-browser-chat"
+```
  
 ## Example
 
-### 1. Create instance obyte.js client
+### 1. Create an instance of obyte.js client
 ```js 
 import obyte from "obyte";
 
-export default new obyte.Client('wss://obyte.org/bb-testnet'); // or wss://obyte.org/bb for livenet
+export default new obyte.Client('wss://obyte.org/bb-test'); // or wss://obyte.org/bb for livenet
 ```
 
-### 2. Create instance chat
+### 2. Create an instance of chat
 ```js 
 import browserChat from "obyte-browser-chat";
 
 import client from "..."; // obyte.js client instance
 
 export default browserChat({
-  name: "This is my chat", // chat name
+  name: "mydomain.com", // chat name that'll show up in the user's wallet
   client, // obyte.js client instance
   testnet: true
 });
@@ -65,38 +67,40 @@ const link = browserChatInstance.sendMessageAfterPairing(message);
 ```js
 const pairingLink = browserChatInstance.getPairingLink();
 ```
+Returns a link that looks like `obyte:PUB_KEY@obyte.org/bb`. The user needs to click it to open the chat.
 
 ### sendMessageAfterPairing - Returns a link for pairing
 
 ```js
 const pairingLink = browserChatInstance.sendMessageAfterPairing("We're glad to see you");
 ```
+As above, plus the provided message will be sent to the user immediately after pairing.
 
-### onPairing - Callback function triggered when pairing devices
-Where "invite" is the link to pairing
+### onPairing - Callback function triggered after pairing
 ```js
-const link = browserChatInstance.onPairing((msgObject) => {
-  console.log("msgObject", msgObject)
+browserChatInstance.onPairing((msgObject) => {
+  console.log("msgObject", msgObject);
+  msgObject.reply("Hi there!");
 });
 ```
-where msgObject contains:
-* reply - message forwarding function 
-* body - object with message and requestId
-* sender - sender's public key
+where `msgObject` contains:
+* `reply` - message forwarding function 
+* `body` - object with `pairing_secret` field
+* `sender` - sender's public key
 
 ### onMessage - Callback function triggered when a message is received
 
 ```js
 browserChatInstance.onMessage((msgObject) => {
-  msgObject.reply("Ok");
+  msgObject.reply("Thanks, you said: " + msgObject.body);
 });
 ```
-where msgObject contains:
-* reply - message forwarding function 
-* body - message (string)
-* sender - sender's public key
+where `msgObject` contains:
+* `reply` - message forwarding function 
+* `body` - received message (string)
+* `sender` - sender's public key
 
-### onReady - Callback function is triggered when the device connects to the hub
+### onReady - Callback function triggered when the device gets connected to the hub
 
 ```js
 browserChatInstance.onReady(() => {

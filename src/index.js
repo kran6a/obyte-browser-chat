@@ -12,7 +12,7 @@ export default class {
 
   /**
    * Creates a new chat instance.
-   * @memberOf obyte-multi-payments
+   * @memberOf obyte-browser-chat
    * @class
    * @param {object} client - obyte.js instance
    * @param {string} [name=Chat] - Chat name
@@ -85,7 +85,7 @@ export default class {
 
   /**
    * Callback function is triggered when the device connects to the hub
-   * @memberOf obyte-multi-payments
+   * @memberOf obyte-browser-chat
    * @callback
    * @example
    * const chatInstance.onReady(() => console.log("I'm connected to the hub")));
@@ -96,7 +96,7 @@ export default class {
 
   /**
    * Send message when pairing
-   * @memberOf obyte-multi-payments
+   * @memberOf obyte-browser-chat
    * @param {string} message
    * @return {string} pairing link with requestId
    * @example
@@ -110,7 +110,7 @@ export default class {
 
   /**
    * Get pairing link
-   * @memberOf obyte-multi-payments
+   * @memberOf obyte-browser-chat
    * @return {string} pairing link
    * @example
    * const link = chatInstance.getPairingLink();
@@ -127,7 +127,7 @@ export default class {
 
   /**
    * Message
-   * @memberOf obyte-multi-payments
+   * @memberOf obyte-browser-chat
    * @param {MessageCallback} cb - The callback that handles the message.
    * @example
    * const chatInstance.onPairing((msg) => msg.reply('pairing'));
@@ -138,7 +138,7 @@ export default class {
 
   /**
  * Message
- * @memberOf obyte-multi-payments
+ * @memberOf obyte-browser-chat
  * @param {MessageCallback} cb - The callback that handles the message.
  * @example
  * const chatInstance.onMessage((msg) => msg.reply('ok'));
@@ -149,7 +149,7 @@ export default class {
 
   /**
   * Function that converts the payment object to base64
-  * @memberOf obyte-multi-payments
+  * @memberOf obyte-browser-chat
   * @param {Object} payments
   * @param {Array} payments.payments
   * @example
