@@ -1,3 +1,4 @@
+const NpmDtsPlugin = require('npm-dts-webpack-plugin')
 const path = require('path')
 
 module.exports = {
@@ -22,5 +23,11 @@ module.exports = {
         }
       }
     ]
-  }
+  },
+  plugins: [
+    new NpmDtsPlugin({
+      logLevel: "error",
+      output: "build/index.d.ts"
+    })
+  ]
 }

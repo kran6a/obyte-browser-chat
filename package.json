@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Library for interacting with Obyte chat",
   "main": "build/index.js",
+  "types": "build/index.d.ts",
   "dependencies": {
     "@obyte/ocore": "0.2.93",
     "secp256k1": "3.8.0",
@@ -22,6 +23,8 @@
     "@babel/polyfill": "^7.4.3",
     "@babel/preset-env": "^7.4.3",
     "babel-loader": "^8.0.5",
+    "npm-dts-webpack-plugin": "^1.3.10",
+    "typescript": "^4.4.4",
     "webpack": "^4.16.1",
     "webpack-cli": "^3.0.8",
     "webpack-dev-server": "^3.1.10"

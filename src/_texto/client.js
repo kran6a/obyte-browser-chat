@@ -1,9 +1,6 @@
 import { publicKeyCreate } from 'secp256k1';
 import { getDeviceMessageHashToSign, getDeviceAddress } from '@obyte/ocore/object_hash';
 import { fromWif, decryptPackage, createObjDeviceKey, createEncryptedPackage, sign } from './utils';
-
-const environment = process.env.REACT_APP_ENVIRONMENT;
-
 export default class Client {
   events = {
     ready: [],
@@ -139,13 +136,14 @@ export default class Client {
 }
 
 class Message {
+  #client;
   constructor(client, sender, body) {
-    this.client = client;
+    this.#client = client;
     this.sender = sender;
     this.body = body;
   }
 
   reply(body) {
-    return this.client.send(this.sender, 'text', body);
+    return this.#client.send(this.sender, 'text', body);
   }
 }

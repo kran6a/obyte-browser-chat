@@ -1,5 +1,6 @@
 # obyte browser chat
 
+*This library uses local storage*
 ## Install
 ``yarn add obyte-browser-chat obyte``
 
@@ -50,9 +51,66 @@ const paymentJsonBase64 = browserChatInstance.generatePaymentString({ payments }
 
 const message = `Send bytes \n[send](payment:${paymentJsonBase64})`;
 
-const link = browserChatInstance.getLink(message);
+const link = browserChatInstance.sendMessageWhenPairing(message);
 
 ...
 
 <a href={link}>Click</a>
+```
+
+## Methods
+
+### getPairingLink - Returns a link for pairing
+
+```js
+const pairingLink = browserChatInstance.getPairingLink();
+```
+
+### sendMessageWhenPairing - Returns a link for pairing
+
+```js
+const pairingLink = browserChatInstance.sendMessageWhenPairing("We're glad to see you");
+```
+
+### onPairing - Callback function triggered when pairing devices
+
+```js
+const link = browserChatInstance.onPairing((invite) => {
+  console.log("invite", invite)
+});
+```
+
+### onMessage - Callback function triggered when a message is received
+
+```js
+browserChatInstance.onPairing((msgObject) => {
+  msgObject.reply("Ok");
+});
+```
+
+### onReady - Callback function triggered when the device is ready
+
+```js
+browserChatInstance.onReady(() => {
+  console.log("I'm ready");
+});
+```
+
+### generatePaymentString - Function that converts the payment object to base64
+
+```js
+const payments = [
+  {
+    address: "2QVJOY3BRRGWP7IOYL64O5BU3WLUJ4TZ",
+    amount: 1e9,
+    asset: "base"
+  },
+  {
+    address: "EJC4A7WQGHEZEKW6RLO7F26SAR4LAQBU",
+    amount: 2e9,
+    asset: "base"
+  }
+];
+
+const paymentJsonBase64 = chatInstance.generatePaymentString({ payments });
 ```
