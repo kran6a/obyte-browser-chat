@@ -1,6 +1,15 @@
 # Obyte browser chat
 
+A library for establishing chat sessions between your web-based dapp and the user's [Obyte](https://obyte.org) wallet. Use the chat to:
+
+* request payments, including payments in multiple assets;
+* request to sign a message;
+* request user's address (without having to copy/paste);
+* request private profiles (such as real name attestations);
+* request a vote in a poll.
+
 *This library uses local storage*
+
 ## Install
 ``yarn add obyte-browser-chat obyte``
 
@@ -80,7 +89,29 @@ As above, plus the provided message will be sent to the user immediately after p
 ```js
 browserChatInstance.onPairing((msgObject) => {
   console.log("msgObject", msgObject);
+
+  // send a plain text message
   msgObject.reply("Hi there!");
+
+  // request to sign a text message
+  msgObject.reply("Please prove ownership of your address by signing this message: [any text](sign-message-request:I confirm for domain.com that I own the address SPV5WIBQQT4DMW7UU5GWCMLYDVNGKECD)");
+
+  // request to sign an object
+  const order = {field1: "value1"};
+  const orderJsonBase64 = Buffer.from(JSON.stringify(order), 'utf8').toString('base64');
+  msgObject.reply(`Please sign an order: [any text](sign-message-request:${orderJsonBase64})`);
+
+  // request a private profile
+  msgObject.reply(`Click this link to reveal your private profile to us: [any text](profile-request:first_name,last_name,dob,country,id_type).`);
+
+  // request a vote
+  const objVote = {
+    poll_unit: '0Vv6lhpjjk3VsKCSGML2NY/5W+WgpsNELQJ1rukhL5Y=',
+    choice: 'Institute For the Future of the University of Nicosia',
+  };
+  const voteJsonBase64 = Buffer.from(JSON.stringify(objVote), 'utf8').toString('base64');
+  msgObject.reply(`Click to vote for ${objVote.choice}: [any text](vote:${voteJsonBase64}).`);
+
 });
 ```
 where `msgObject` contains:
