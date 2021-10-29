@@ -33,7 +33,7 @@ export default class {
     }
 
     let clientConfig;
-    const lSClientConfig = localStorage.getItem(`${this.#LOCALSTORAGE_KEY}.texto`);
+    const lSClientConfig = window.localStorage.getItem(`${this.#LOCALSTORAGE_KEY}.texto`);
 
     if (lSClientConfig) {
       clientConfig = JSON.parse(lSClientConfig);
@@ -45,7 +45,7 @@ export default class {
         prevTempPrivKey: randomBytes(32).toString('base64'),
         name: this.name
       };
-      localStorage.setItem(`${this.#LOCALSTORAGE_KEY}.texto`, JSON.stringify(clientConfig));
+      window.localStorage.setItem(`${this.#LOCALSTORAGE_KEY}.texto`, JSON.stringify(clientConfig));
     }
 
     this.client.requestAsync = (command, params) =>
