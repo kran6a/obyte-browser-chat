@@ -6,7 +6,7 @@
   "types": "build/index.d.ts",
   "dependencies": {
     "@obyte/ocore": "0.2.93",
-    "secp256k1": "3.8.0",
+    "secp256k1": "^3.7.1",
     "wif": "^2.0.6"
   },
   "scripts": {
