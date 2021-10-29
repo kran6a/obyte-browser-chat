@@ -88,11 +88,11 @@ browserChatInstance.onMessage((msgObject) => {
 });
 ```
 
-### onReady - Callback function triggered when the device is ready
+### onReady - Callback function is triggered when the device connects to the hub
 
 ```js
 browserChatInstance.onReady(() => {
-  console.log("I'm ready");
+  console.log("I'm connected to the hub");
 });
 ```
 

@@ -60,10 +60,9 @@ export default class {
 
     this.textoInstants = new Client(clientConfig);
 
+    this.#invite = `obyte${this.testnet ? "-tn" : ""}:${this.textoInstants.devicePubKey}@obyte.org/bb${this.testnet ? "-test" : ""}`
+
     this.textoInstants.on('ready', () => {
-      const devicePubKey = this.textoInstants.devicePubKey;
-      const invite = `obyte${this.testnet ? "-tn" : ""}:${devicePubKey}@obyte.org/bb${this.testnet ? "-test" : ""}`;
-      this.#invite = invite;
       this.#readyCallback && this.#readyCallback(invite);
     });
 
@@ -85,11 +84,11 @@ export default class {
   }
 
   /**
-   * Message
+   * Callback function is triggered when the device connects to the hub
    * @memberOf obyte-multi-payments
    * @callback
    * @example
-   * const chatInstance.onReady((invite) => console.log("invite")));
+   * const chatInstance.onReady(() => console.log("I'm connected to the hub")));
    */
   onReady(cb) {
     this.#readyCallback = cb;
