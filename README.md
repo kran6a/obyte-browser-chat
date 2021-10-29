@@ -51,7 +51,7 @@ const paymentJsonBase64 = browserChatInstance.generatePaymentString({ payments }
 
 const message = `Send bytes \n[send](payment:${paymentJsonBase64})`;
 
-const link = browserChatInstance.sendMessageWhenPairing(message);
+const link = browserChatInstance.sendMessageAfterPairing(message);
 
 ...
 
@@ -66,10 +66,10 @@ const link = browserChatInstance.sendMessageWhenPairing(message);
 const pairingLink = browserChatInstance.getPairingLink();
 ```
 
-### sendMessageWhenPairing - Returns a link for pairing
+### sendMessageAfterPairing - Returns a link for pairing
 
 ```js
-const pairingLink = browserChatInstance.sendMessageWhenPairing("We're glad to see you");
+const pairingLink = browserChatInstance.sendMessageAfterPairing("We're glad to see you");
 ```
 
 ### onPairing - Callback function triggered when pairing devices
@@ -83,7 +83,7 @@ const link = browserChatInstance.onPairing((invite) => {
 ### onMessage - Callback function triggered when a message is received
 
 ```js
-browserChatInstance.onPairing((msgObject) => {
+browserChatInstance.onMessage((msgObject) => {
   msgObject.reply("Ok");
 });
 ```

@@ -101,9 +101,9 @@ export default class {
    * @param {string} message
    * @return {string} pairing link with requestId
    * @example
-   * const link = chatInstance.sendMessageWhenPairing(message);
+   * const link = chatInstance.sendMessageAfterPairing(message);
    */
-  sendMessageWhenPairing(message) {
+  sendMessageAfterPairing(message) {
     const requestId = randomBytes(32).toString('base64');
     this.#messages.push({ requestId, message })
     return `${this.#invite}#${requestId}`;
