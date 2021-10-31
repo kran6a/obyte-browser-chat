@@ -15,10 +15,10 @@ export default class {
    * Creates a new chat instance.
    * @memberOf obyte-browser-chat
    * @class
-   * @param {object} client - obyte.js instance
-   * @param {string} [name=Chat] - Chat name
-   * @param {boolean} [testnet=false] - true for test network
-   * @param {string} [localStorageKey=chat]
+   * @param {Object} config
+   * @param {object} config.client - obyte.js client instance
+   * @param {boolean} config.testnet
+   * @param {string} config.localStorageKey
    */
   constructor({client, name = "Chat", testnet = false, localStorageKey = "chat"}) {
     this.#LOCALSTORAGE_KEY = `${localStorageKey}-${testnet ? "testnet" : "livenet"}`;
