@@ -126,7 +126,7 @@ export default class {
    * const link = chatInstance.getPairingLink();
    */
   getPairingLink() {
-    return this.#invite;
+    return `${this.#invite}#0000`;
   }
 
   /**
