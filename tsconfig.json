@@ -1,4 +1,8 @@
 {
+  "ts-node": {
+    "transpileOnly": true
+  },
+  "extends": "@tsconfig/strictest",
   // Change this to match your project
   "include": ["src/**/*"],
   "compilerOptions": {
