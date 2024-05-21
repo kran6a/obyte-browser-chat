@@ -1,43 +1,29 @@
 import wif from 'wif';
 import { publicKeyCreate, sign as ecdsaSign, verify as ecdsaVerify } from 'secp256k1';
-import { randomBytes, createHash, createECDH, createCipheriv, createDecipheriv } from 'crypto';
-import { clone } from "lodash";
+import { randomBytes, createHash, createECDH, createCipheriv, createDecipheriv, type ECDH } from 'crypto';
 import chash from "./chash";
 
-var STRING_JOIN_CHAR = "\x00";
+const STRING_JOIN_CHAR = "\x00";
 
-export function deriveSharedSecret(ecdh, peerB64Pubkey) {
-  const sharedSecretSrc = ecdh.computeSecret(peerB64Pubkey, 'base64');
+export function deriveSharedSecret(ecdh: ECDH, peerB64Pubkey: string) {
   return createHash('sha256')
-    .update(sharedSecretSrc)
+    .update(ecdh.computeSecret(peerB64Pubkey, 'base64'))
     .digest()
-    .slice(0, 16);
+    .subarray(0, 16);
 }
 
-export function createEncryptedPackage(json, recipientDevicePubkey) {
+export function createEncryptedPackage(json: object, recipientDevicePubkey: string) {
   const text = JSON.stringify(json);
   const ecdh = createECDH('secp256k1');
   const senderEphemeralPubkey = ecdh.generateKeys('base64', 'compressed');
-  const sharedSecret = deriveSharedSecret(ecdh, recipientDevicePubkey); // Buffer
+  const sharedSecret = deriveSharedSecret(ecdh, recipientDevicePubkey);
   // we could also derive iv from the unused bits of ecdh.computeSecret() and save some bandwidth
   const iv = randomBytes(12); // 128 bits (16 bytes) total, we take 12 bytes for random iv and leave 4 bytes for the counter
   const cipher = createCipheriv('aes-128-gcm', sharedSecret, iv);
-  // under browserify, encryption of long strings fails with Array buffer allocation errors, have to split the string into chunks
-  let arrChunks = [];
-  const CHUNK_LENGTH = 2003;
-  for (let offset = 0; offset < text.length; offset += CHUNK_LENGTH) {
-    arrChunks.push(
-      // @ts-ignore
-      cipher.update(text.slice(offset, Math.min(offset + CHUNK_LENGTH, text.length)), 'utf8')
-    );
-  }
-  // @ts-ignore
-  arrChunks.push(cipher.final());
-  const encryptedMessageBuf = Buffer.concat(arrChunks);
-
+  const encryptedMessageBuf = cipher.update(text, 'utf8');
+  cipher.final();
   const encryptedMessage = encryptedMessageBuf.toString('base64');
   const authtag = cipher.getAuthTag();
-  // this is visible and verifiable by the hub
   return {
     encrypted_message: encryptedMessage,
     iv: iv.toString('base64'),
@@ -49,14 +35,15 @@ export function createEncryptedPackage(json, recipientDevicePubkey) {
   };
 }
 
-export function decryptPackage(objEncryptedPackage, objMyTempDeviceKey) {
+export function decryptPackage(objEncryptedPackage: any, objMyTempDeviceKey: any) {
   const priv_key = objMyTempDeviceKey.priv;
-  if (objMyTempDeviceKey.use_count) objMyTempDeviceKey.use_count++;
+  if (objMyTempDeviceKey.use_count)
+    objMyTempDeviceKey.use_count++;
   else objMyTempDeviceKey.use_count = 1;
 
   const ecdh = createECDH('secp256k1');
   
-  if (process.browser) ecdh.generateKeys('base64', 'compressed');
+  ecdh.generateKeys('base64', 'compressed');
   ecdh.setPrivateKey(priv_key);
   const shared_secret = deriveSharedSecret(ecdh, objEncryptedPackage.dh.sender_ephemeral_pubkey);
   const iv = Buffer.from(objEncryptedPackage.iv, 'base64');
@@ -65,75 +52,58 @@ export function decryptPackage(objEncryptedPackage, objMyTempDeviceKey) {
   decipher.setAuthTag(authtag);
   const enc_buf = Buffer.from(objEncryptedPackage.encrypted_message, 'base64');
 
-  
-  let arrChunks = [];
-  const CHUNK_LENGTH = 4096;
-  for (let offset = 0; offset < enc_buf.length; offset += CHUNK_LENGTH) {
-    arrChunks.push(
-      // @ts-ignore
-      decipher.update(enc_buf.slice(offset, Math.min(offset + CHUNK_LENGTH, enc_buf.length)))
-    );
-  }
-  const decrypted1 = Buffer.concat(arrChunks);
-  let decrypted2;
-  try {
-    decrypted2 = decipher.final();
-  } catch (e) {
-    return console.log('Failed to decrypt package: ' + e);
-  }
-
-  const decrypted_message_buf = Buffer.concat([decrypted1, decrypted2]);
+  const decrypted_message_buf = decipher.update(enc_buf);
+  decipher.final();
   const decrypted_message = decrypted_message_buf.toString('utf8');
   const json = JSON.parse(decrypted_message);
   if (json.encrypted_package) {
-    // strip another layer of encryption
     return decryptPackage(json.encrypted_package, objMyTempDeviceKey);
-  } else return json;
+  }
+  else {
+    return json;
+  }
 }
 
-export function createObjDeviceKey(priv) {
+export function createObjDeviceKey(priv: Buffer) {
   try {
-    return { priv, pub_b64: publicKeyCreate(priv, true).toString('base64') };
+    return { priv, pub_b64: Buffer.from(publicKeyCreate(priv, true)).toString('base64') };
   } catch (e) {
     console.log("createObjDeviceKey err ", e)
   }
 }
 
-export function toWif(privateKey, testnet) {
+export function toWif(privateKey: Buffer, testnet: boolean) {
   const version = testnet ? 239 : 128;
   return wif.encode(version, privateKey, false);
 }
 
-export function fromWif(string, testnet) {
+export function fromWif(string: string, testnet: boolean) {
   const version = testnet ? 239 : 128;
   return wif.decode(string, version);
 }
 
-export function sign(hash, privateKey) {
+export function sign(hash: Buffer, privateKey: Buffer) {
   try{
-    const res = ecdsaSign(hash, privateKey);
-    return res.signature.toString('base64');
+    return Buffer.from(ecdsaSign(hash, privateKey).signature).toString('base64');
   } catch (e) {
     console.error("sign error", e)
   }
   
 }
 
-export function verify(hash, b64Sig, b64Pubkey) {
+export function verify(hash: Buffer, b64Sig: string, b64Pubkey: string) {
   try {
-    const signature = new Buffer(b64Sig, 'base64');
-    return ecdsaVerify(hash, signature, new Buffer(b64Pubkey, 'base64'));
+    return ecdsaVerify(hash, Buffer.from(b64Sig, 'base64'), Buffer.from(b64Pubkey, 'base64'));
   } catch (e) {
     return false;
   }
 }
 
-export const generatePaymentMessage = (objPaymentRequest) => {
-  const paymentJson = JSON.stringify(objPaymentRequest);
-  return Buffer.from(paymentJson).toString('base64');
+export const generatePaymentMessage = (objPaymentRequest: any) => {
+  return Buffer.from(JSON.stringify(objPaymentRequest)).toString('base64');
 }
 
-function cleanNullsDeep(obj) {
+function cleanNullsDeep(obj: Record<string, any>) {
   Object.keys(obj).forEach(function (key) {
     if (obj[key] === null)
       delete obj[key];
@@ -142,24 +112,24 @@ function cleanNullsDeep(obj) {
   });
 }
 
-export function getDeviceMessageHashToSign(objDeviceMessage) {
-  var objNakedDeviceMessage = clone(objDeviceMessage);
+export function getDeviceMessageHashToSign(objDeviceMessage: any) {
+  const objNakedDeviceMessage = structuredClone(objDeviceMessage);
   delete objNakedDeviceMessage.signature;
   cleanNullsDeep(objNakedDeviceMessage); // device messages have free format and we can't guarantee absence of malicious fields
   return createHash("sha256").update(getSourceString(objNakedDeviceMessage), "utf8").digest();
 }
 
-export function getDeviceAddress(b64_pubkey) {
+export function getDeviceAddress(b64_pubkey: string) {
   return ('0' + getChash160(b64_pubkey));
 }
 
-function getChash160(obj) {
+function getChash160(obj: string | object) {
   return chash.getChash160(getSourceString(obj));
 }
 
-export function getSourceString(obj) {
-  var arrComponents = [];
-  function extractComponents(variable) {
+export function getSourceString(obj: string | object) {
+  const arrComponents: string[] = [];
+  function extractComponents(variable: any) {
     if (variable === null)
       throw Error("null value in " + JSON.stringify(obj));
     switch (typeof variable) {
@@ -177,12 +147,12 @@ export function getSourceString(obj) {
           if (variable.length === 0)
             throw Error("empty array in " + JSON.stringify(obj));
           arrComponents.push('[');
-          for (var i = 0; i < variable.length; i++)
+          for (let i = 0; i < variable.length; i++)
             extractComponents(variable[i]);
           arrComponents.push(']');
         }
         else {
-          var keys = Object.keys(variable).sort();
+          const keys = Object.keys(variable).sort();
           if (keys.length === 0)
             throw Error("empty object in " + JSON.stringify(obj));
           keys.forEach(function (key) {

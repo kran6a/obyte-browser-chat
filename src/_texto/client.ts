@@ -1,22 +1,21 @@
 import { publicKeyCreate } from 'secp256k1';
 import { fromWif, decryptPackage, createObjDeviceKey, createEncryptedPackage, sign, getDeviceMessageHashToSign, getDeviceAddress } from './utils';
 export default class Client {
-  events = {
-    ready: [],
-    pairing: [],
-    message: []
-  };
+  private events = {ready: [], pairing: [], message: []};
+  private address: string;
+  private client: any;
+  private devicePubKey: string;
+  private objMyPermDeviceKey: {priv: Buffer, pub_b64: string};
 
-  constructor(config) {
+  constructor(config: {address: string, testnet: boolean, client: any, wif: string, tempPrivKey: string, name: string}) {
     this.address = config.address ? config.address : `wss://obyte.org/bb${config.testnet ? "-test" : ""}`;
     this.client = config.client;
-    this.config = config;
     const { testnet, wif, tempPrivKey, name } = config;
     const devicePrivKey = fromWif(wif, testnet).privateKey;
-    this.devicePubKey = publicKeyCreate(devicePrivKey, true).toString('base64');
+    this.devicePubKey = Buffer.from(publicKeyCreate(devicePrivKey, true)).toString('base64');
     const deviceTempPrivKey = Buffer.from(tempPrivKey, 'base64');
-    this.objMyPermDeviceKey = createObjDeviceKey(devicePrivKey);
-    const objMyTempDeviceKey = createObjDeviceKey(deviceTempPrivKey);
+    this.objMyPermDeviceKey = createObjDeviceKey(devicePrivKey) as Exclude<ReturnType<typeof createObjDeviceKey>, undefined>;
+    const objMyTempDeviceKey = createObjDeviceKey(deviceTempPrivKey) as Exclude<ReturnType<typeof createObjDeviceKey>, undefined>;
 
     this.client.subscribe((err, result) => {
       const [command, { subject, body }] = result;
@@ -51,7 +50,7 @@ export default class Client {
               
               this.client.justsaying('hub/refresh', null);
               
-              this.trigger('ready', null);
+              this.trigger('ready', '');
               
               break;
             }
@@ -102,22 +101,19 @@ export default class Client {
     });
   }
 
-  on(event, cb) {
+  on(event: string, cb) {
     this.events[event].push(cb);
   }
 
-  trigger(event, msg) {
+  trigger(event: string, msg: string) {
     this.events[event].forEach(cb => cb(msg));
   }
 
-  async send(recipientDevicePubkey, subject, body) {
+  async send(recipientDevicePubkey: string, subject: string, body: string) {
     const myDeviceAddress = getDeviceAddress(this.devicePubKey);
     const myDeviceHub = this.address.replace('wss://', '').replace('ws://', '');
     const json = { from: myDeviceAddress, device_hub: myDeviceHub, subject, body };
-    const objTempPubkey = await this.client.requestAsync(
-      'hub/get_temp_pubkey',
-      recipientDevicePubkey
-    );
+    const objTempPubkey = await this.client.requestAsync('hub/get_temp_pubkey', recipientDevicePubkey);
     const objEncryptedPackage = createEncryptedPackage(json, objTempPubkey.temp_pubkey);
     const recipientDeviceAddress = getDeviceAddress(recipientDevicePubkey);
     const objDeviceMessage = {
@@ -126,23 +122,28 @@ export default class Client {
       pubkey: this.objMyPermDeviceKey.pub_b64,
       signature: undefined
     };
-    objDeviceMessage.signature = sign(
-      getDeviceMessageHashToSign(objDeviceMessage),
-      this.objMyPermDeviceKey.priv
-    );
+    objDeviceMessage.signature = sign(getDeviceMessageHashToSign(objDeviceMessage), this.objMyPermDeviceKey.priv);
     return this.client.requestAsync('hub/deliver', objDeviceMessage);
   }
 }
 
-class Message {
-  #client;
-  constructor(client, sender, body) {
-    this.#client = client;
+export class Message {
+  private client;
+  public sender: string;
+  public body: string;
+  constructor(client: any, sender: string, body: string) {
+    this.client = client;
     this.sender = sender;
     this.body = body;
   }
 
-  reply(body) {
-    return this.#client.send(this.sender, 'text', body);
+  reply(body: string) {
+    return this.client.send(this.sender, 'text', body);
+  }
+  public toString(){
+    return JSON.stringify(this.toJSON(), null, 2);
+  }
+  public toJSON(){
+    return {sender: this.sender,body: this.body};
   }
 }
