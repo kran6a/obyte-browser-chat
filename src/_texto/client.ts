@@ -1,13 +1,14 @@
 import { publicKeyCreate } from 'secp256k1';
 import { fromWif, decryptPackage, createObjDeviceKey, createEncryptedPackage, sign, getDeviceMessageHashToSign, getDeviceAddress } from './utils';
+
 export default class Client {
-  private events = {ready: [], pairing: [], message: []};
-  private address: string;
+  private events: {ready: (()=>void)[], pairing: ((msg: Message)=>void)[], message: ((msg: Message)=>void)[]} = {ready: [], pairing: [], message: []};
+  public address: string;
   private client: any;
-  private devicePubKey: string;
+  public devicePubKey: string;
   private objMyPermDeviceKey: {priv: Buffer, pub_b64: string};
 
-  constructor(config: {address: string, testnet: boolean, client: any, wif: string, tempPrivKey: string, name: string}) {
+  constructor(config: {address?: string, testnet: boolean, client: any, wif: string, tempPrivKey: string, name: string}) {
     this.address = config.address ? config.address : `wss://obyte.org/bb${config.testnet ? "-test" : ""}`;
     this.client = config.client;
     const { testnet, wif, tempPrivKey, name } = config;
@@ -17,7 +18,7 @@ export default class Client {
     this.objMyPermDeviceKey = createObjDeviceKey(devicePrivKey) as Exclude<ReturnType<typeof createObjDeviceKey>, undefined>;
     const objMyTempDeviceKey = createObjDeviceKey(deviceTempPrivKey) as Exclude<ReturnType<typeof createObjDeviceKey>, undefined>;
 
-    this.client.subscribe((err, result) => {
+    this.client.subscribe((_: Error, result: [string, {subject: string, body: any}]) => {
       const [command, { subject, body }] = result;
       switch (command) {
         case 'justsaying':
@@ -77,6 +78,11 @@ export default class Client {
                     this.trigger('message', msg);
                     break;
                   }
+                  case 'trpc': {
+                    const msg = new Message(this, body.message.pubkey, decryptedPackage.body);
+                    this.trigger('message', msg);
+                    break;
+                  }
                   default: {
                     break;
                   }
@@ -101,15 +107,15 @@ export default class Client {
     });
   }
 
-  on(event: string, cb) {
-    this.events[event].push(cb);
+  on(event: 'ready' | 'pairing' | 'message', cb: typeof event extends 'ready' ? ()=>void : (msg: Message)=>void) {
+    this.events[event].push(cb as any);
   }
 
-  trigger(event: string, msg: string) {
+  trigger(event: 'ready' | 'pairing' | 'message', msg: Message) {
     this.events[event].forEach(cb => cb(msg));
   }
 
-  async send(recipientDevicePubkey: string, subject: string, body: string) {
+  async send(recipientDevicePubkey: string, subject: string, body: Record<string, any> | any[] | string) {
     const myDeviceAddress = getDeviceAddress(this.devicePubKey);
     const myDeviceHub = this.address.replace('wss://', '').replace('ws://', '');
     const json = { from: myDeviceAddress, device_hub: myDeviceHub, subject, body };
@@ -120,7 +126,6 @@ export default class Client {
       encrypted_package: objEncryptedPackage,
       to: recipientDeviceAddress,
       pubkey: this.objMyPermDeviceKey.pub_b64,
-      signature: undefined
     };
     objDeviceMessage.signature = sign(getDeviceMessageHashToSign(objDeviceMessage), this.objMyPermDeviceKey.priv);
     return this.client.requestAsync('hub/deliver', objDeviceMessage);

@@ -14,6 +14,9 @@ const chat = new browserChat({client,
         prevTempPrivKey: randomBytes(32).toString('base64'),
     }
   });
+  chat.onReady(()=>{
+    console.log(chat.getPairingLink())
+  })
   chat.onMessage((msg)=>{
     msg.reply("Hello " + msg.body);
   })
